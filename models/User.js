@@ -19,6 +19,9 @@ const UserSchema = new Schema({
     fireBaseToken:{
         type:String,
         required:false
+    },resetKey:{
+        type:String,
+        required:false
     }
 })
 

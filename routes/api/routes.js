@@ -3,7 +3,7 @@ const router = express.Router()
 const mongoose = require('mongoose')
 
 const Route = require('../../models/Route')
-
+const Robot = require('../../models/Robot')
 // variables and constants used by path finding algorithm
 var rows=10;
 var cols=26;
@@ -103,6 +103,141 @@ var map = (function (){
 })();
 
  const bodyParser = require('body-parser');
+
+ router.get("/getPath", async (req, res) => {
+  try {
+    const currentRoute = await Route.find();
+    const robotRoute = currentRoute[0].path;
+    return res.status(200).send({ data: robotRoute })
+  } catch (error) {
+    return res.status(400).send({ msg: error.message })
+  }
+}
+);
+var request = require('request-promise');
+router.post("/sendPath", async (req, res) => {
+  try {
+    const robot = await Robot.find();
+    const ourRobot = robot[0];
+    if (ourRobot.processed === 'idle') {
+      const currentRoute = await Route.find();
+      const robotRoute = currentRoute[0].path;
+      console.log(robotRoute)
+      var returndata;
+      var options = {
+        method: 'POST',
+        uri: 'http://192.168.137.168:5000',
+        body: robotRoute,
+        json: true // Automatically stringifies the body to JSON
+      };
+      var sendrequest = await request(options)
+        .then(function (parsedBody) {
+          console.log(parsedBody); // parsedBody contains the data sent back from the Flask server
+          returndata = parsedBody; // do something with this data, here I'm assigning it to a variable.
+        })
+      console.log(returndata)
+    }
+  } catch (error) {
+    return res.status(400).send({ msg: error.message })
+  }
+});
+//Convert points to directions
+
+router.post('/dir', async (req, res) => {
+  try {
+    console.log(req.body)
+    const points = req.body.points
+    var lastPoint = [];
+    var dir = [];
+    var incdec = [];
+    for (var i = 0; i < points.length - 1; i++) {
+      if (i == 0) {
+        dir.push('F')
+        if (points[i][0] !== points[i + 1][0]) {
+          lastPoint.push('X')
+          if (points[i][0] < points[i + 1][0]) {
+            incdec.push('+')
+          }
+          else {
+            incdec.push('-')
+          }
+        }
+        else {
+          lastPoint.push('Y')
+          if (points[i][1] < points[i + 1][1]) {
+            incdec.push('+')
+          }
+          else {
+            incdec.push('-')
+          }
+        }
+      }
+      else {
+        if (points[i][0] !== points[i + 1][0]) {
+          if (lastPoint[lastPoint.length - 1] === 'X') {
+            dir.push('F')
+          }
+          else {
+            if (points[i][0] < points[i + 1][0]) {
+              if (incdec[incdec.length - 1] === '-') {
+                dir.push('L')
+              }
+              else {
+                dir.push('R')
+              }
+              incdec.push('+')
+            }
+            else {
+              if (incdec[incdec.length - 1] === '-') {
+                dir.push('R')
+              }
+              else {
+                dir.push('L')
+              }
+              incdec.push('-')
+            }
+            lastPoint.push('X')
+          }
+        }
+        else {
+          if (lastPoint[lastPoint.length - 1] === 'Y') {
+            dir.push('F')
+          }
+          else {
+            if (points[i][1] < points[i + 1][1]) {
+              if (incdec[incdec.length - 1] === '-') {
+                dir.push('R')
+              }
+              else {
+                dir.push('L')
+              }
+              incdec.push('+')
+            }
+            else {
+              if (incdec[incdec.length - 1] === '-') {
+                dir.push('L')
+              }
+              else {
+                dir.push('R')
+              }
+              incdec.push('-')
+            }
+            lastPoint.push('Y')
+          }
+        }
+      }
+    }
+    console.log(dir)
+    console.log(incdec)
+    console.log(lastPoint)
+    return res.status(200).send({ msg: 'hi', data: dir })
+  }
+  catch (error) {
+    // We will be handling the error later
+    console.log(error)
+  }
+})
+
  // use path finding algorithm to get new route
  router.post("/path" , async (req,res)=>{
   try{
@@ -147,10 +282,11 @@ var map = (function (){
       //     if(cameFrom[i])
       // //    console.log(cameFrom[i].i+" , "+cameFrom[i].j );
       //   }
-
+// ahemd's part
+      //end ahmed's part
         var jason = [];
-        for(var i = 0;i<cameFrom.length;i++){
-          jason[i]="point : ["+cameFrom[i].i+","+cameFrom[i].j+"]";
+        for (var i = cameFrom.length - 1, sh = 0; i > -1; i-- , sh++) {
+          jason[i] = [cameFrom[sh].i, Math.abs(9 - cameFrom[sh].j)]
         }
   
          // return  array

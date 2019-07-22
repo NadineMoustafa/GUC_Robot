@@ -96,19 +96,6 @@ router.post('/', async (req,res) => {
 
 
  
-  router.put('/changeState/:id', async (req,res) => {
-    try {
-     const id = req.params.id
-     const robot = await Robot.findById(id)
-     if(!robot) return res.status(404).send({error: 'Robot does not exist'})
-     const updatedRobot = await Robot.findByIdAndUpdate({_id : id},{processed : req.body.processed})
-     res.json({msg: 'Robot state updated successfully'})
-    }
-    catch(error) {
-        // We will be handling the error later
-        console.log(error)
-    }  
- })
 
  router.get('/myNotificaaton', async (req,res) => {
     try {

@@ -68,17 +68,17 @@ router.post('/', async (req, res) => {
 
 
 
-router.delete('/:id', async (req, res) => {
-    try {
-        const id = req.params.id
-        const deletedRequest = await Request.findByIdAndRemove(id)
-        res.json({ msg: 'Request was deleted successfully', data: deletedRequest })
-    }
-    catch (error) {
-        // We will be handling the error later
-        console.log(error)
-    }
-})
+// router.delete('/:id', async (req, res) => {
+//     try {
+//         const id = req.params.id
+//         const deletedRequest = await Request.findByIdAndRemove(id)
+//         res.json({ msg: 'Request was deleted successfully', data: deletedRequest })
+//     }
+//     catch (error) {
+//         // We will be handling the error later
+//         console.log(error)
+//     }
+// })
 
 router.put('/RobotGoes/:id', async (req, res) => {
     try {
@@ -131,7 +131,12 @@ router.put('/RobotArrived', async (req, res) => {
                 for (var i = 0; i < PendingRequests.length - 1; i++) {
                     if (PendingRequests.length > 1 && PendingRequests[i].time.getTime() < PendingRequests[i + 1].time.getTime()) {
                         min = PendingRequests[i]
-                    }
+                    }d
+
+
+
+
+
                 }
                 const body0 = {
                     request: min
@@ -192,6 +197,18 @@ router.put('/RobotReturns/:id', async (req, res) => {
 })
 
 // Update a Request
+// router.put('/:id', async (req, res) => {
+//     try {
+//         const request = await Request.findById(req.params.id)
+//         if (!request) return res.status(404).send({ error: 'Request does not exist' })
+//         const updatedRequest = await Request.findOneAndUpdate({ _id: req.params.id }, req.body)
+//         res.json({ data: updatedRequest })
+//     }
+//     catch (error) {
+//         console.log(error)
+//     }
+// })
+// Ahmde's Part
 router.put('/:id', async (req, res) => {
     try {
         const request = await Request.findById(req.params.id)
@@ -203,6 +220,19 @@ router.put('/:id', async (req, res) => {
         console.log(error)
     }
 })
+router.delete('/:id', async (req, res) => {
+    try {
+        const id = req.params.id
+        const deletedRequest = await Request.findByIdAndRemove(id)
+        res.json({ msg: 'Request was deleted successfully', data: deletedRequest })
+    }
+    catch (error) {
+        // We will be handling the error later
+        console.log(error)
+    }
+})
+
+// End Ahmed's Part
 
 // add request to the database
 router.post('/getRobot', async (req, res) => {
@@ -253,9 +283,19 @@ router.post('/getRobot', async (req, res) => {
 //return res.status(400).send({ msg: err.message, error: "post request" })
             await axios.post(`https://robotdelivery.herokuapp.com/api/routes/dir`, {points:pointss})
                 .then(json => {
-                    directio = json.data
+                    directio = json.data.data
                 })
                 .catch(err => { console.log(err.message) });
+
+                var body3 = {
+                    end: { x: senderOffice.point.x, y: senderOffice.point.y },
+                    start: { x: Math.round(currLocation.x), y: Math.round(currLocation.y) },
+                    path: {Directions: directio , Points:pointss}
+                }    
+            
+                await axios.put(`https://robotdelivery.herokuapp.com/api/routes/5d342d1560b5942720309bee`, body3)
+                .catch(err => { console.log(err.message) });
+
                 await  sendToApp(req.body.sender,{data:{ msg: 'The Robot is on his way to you',type:'0'}})
                 await  sendToApp(req.body.receiver,{ data:{msg: sender1.name+' has sent you a request!',type:'1'}})
             return res.status(200).send({ msg: 'The Robot is on his way to you', directions: directio,data:pointss })
