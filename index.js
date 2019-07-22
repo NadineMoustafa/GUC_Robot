@@ -46,7 +46,7 @@ app.post('/RaspberryPi',async (req,res)=>
   console.log(reqs.sender)
   var sender=await User.findById(reqs.sender)
  console.log(sender)
- await  sendToApp(sender.email,{ data:{msg: 'Meet the robot at the door!'}})
+ await  sendToApp(sender.email,{ data:{msg: 'Meet the robot at the door!',type:'0'}})
  return res.status(200).send({msg:'Meet the robot at the door'})
 
   } catch(error){
@@ -61,7 +61,7 @@ app.post('/RPreciever', async (req,res)=>
   console.log(reqs.receiver)
   var receiver=await User.findById(reqs.receiver)
  console.log(receiver)
- await  sendToApp(receiver.email,{data:{ msg: 'Meet the robot at the door!'}})
+ await  sendToApp(receiver.email,{data:{ msg: 'Meet the robot at the door!',type:'1'}})
  return res.status(200).send({msg:'Meet the robot at the door'})
 
 } catch(error){
